@@ -1,0 +1,36 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "appliedtheory/centos-7-ec2"
+  config.vm.box_version = "1.0.0"
+
+  config.vm.define "gluster0" do |config_gluster0|
+     config_gluster0.vm.provider :aws do |gluster0, override|
+       gluster0.access_key_id = ENV['AWS_ACCESS_KEY_ID']
+       gluster0.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+       gluster0.instance_type = "t2.micro"
+       gluster0.subnet_id = "subnet-418ea519"
+       gluster0.associate_public_ip = 'true'
+       gluster0.security_groups = ['sg-22447759']
+       gluster0.keypair_name = 'pgnvirgin'
+       gluster0.private_ip_address = '10.0.0.10'
+       gluster0.ami = 'ami-46c1b650'
+       gluster0.tags = {
+          'Name' => "gluster0"
+       }
+       gluster0.block_device_mapping = [{
+      	  'DeviceName' => "/dev/sda1",
+          'VirtualName' => 'root',
+          'Ebs.DeleteOnTermination' => true
+          },
+          {
+          'DeviceName' => '/dev/sdb',
+          'Ebs.VolumeSize' => 8,
+          'Ebs.VolumeType' => 'gp2',
+          'Ebs.DeleteOnTermination' => 'true' }]
+       override.ssh.username = "centos"
+       override.ssh.private_key_path = "~/.ssh/pgnvirgin.pem"
+       override.vm.provision "shell", inline: "sudo /vagrant/gluster.sh"
+     end
+  end
+
+end
+
